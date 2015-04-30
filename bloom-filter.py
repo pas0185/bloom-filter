@@ -45,14 +45,19 @@ class BloomFiler:
         # From Wikipedia:
         # "Feed it [the element] to each of the k hash functions to get k array positions.
 
+        for seed in [i for i in range(self.num_hashes)]:
+            hash = mmh3.hash(element, seed) % self.num_bits
 
-        # If any of the bits at these positions is 0, the element is definitely not in the set.
-        # If it were, then all the bits would have been set to 1 when it was inserted.
+            # If any of the bits at these positions is 0, the element is definitely not in the set.
+            # If it were, then all the bits would have been set to 1 when it was inserted.
+            if self.bit_array[hash] == 0:
+                print 'The element %s is definitely not in the set' % element
+                return False
 
         # If all are 1, then either the element is in the set, or the bits have by chance been set to 1
         # during the insertion of other elements resulting in a false positive."
-
-        pass
+        print 'The element %s is probably in the set' % element
+        return True
 
     def read_training_file(self, file_name):
         # Input a training file with n-grams newline-delimited
