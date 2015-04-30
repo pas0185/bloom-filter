@@ -1,5 +1,13 @@
 __author__ = 'Patrick Sheehan'
 
+# Sources:
+# Bitarray Documentation:
+# https://pypi.python.org/pypi/bitarray/
+#
+# MurmurHash3 Documentation:
+# https://pypi.python.org/pypi/mmh3/2.0
+#
+
 from bitarray import bitarray
 import mmh3
 
@@ -7,10 +15,12 @@ class BloomFiler:
 
 
     def __init__(self, num_bits, num_hashes):
-        # Initialize bitarray with the given size
+        # Initialize bitarray of num_bits size with all set to 0/False
+        self.bit_array = bitarray(num_bits)
+        self.bit_array.setall(0)
 
         # Set how many hash functions should be used
-
+        self.num_hashes = num_hashes
 
         pass
 
@@ -35,6 +45,14 @@ class BloomFiler:
 
         # If all are 1, then either the element is in the set, or the bits have by chance been set to 1
         # during the insertion of other elements resulting in a false positive."
+
+        pass
+
+    def read_training_file(self, file_name):
+        # Input a training file with n-grams newline-delimited
+
+        # Add each to the bit_array
+
 
         pass
 
