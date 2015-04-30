@@ -16,6 +16,7 @@ class BloomFiler:
 
     def __init__(self, num_bits, num_hashes):
         # Initialize bitarray of num_bits size with all set to 0/False
+        self.num_bits = num_bits
         self.bit_array = bitarray(num_bits)
         self.bit_array.setall(0)
 
@@ -30,6 +31,11 @@ class BloomFiler:
         # From Wikipedia:
         # "To add an element, feed it to each of the k hash functions to get k array positions.
         # Set the bits at all these positions to 1"
+
+        for seed in [i for i in range(self.num_hashes)]:
+            # Modulus for remainder if hash is larger than bit array
+            hash = mmh3.hash(element, seed) % self.num_bits
+            self.bit_array[hash] = 1
 
         pass
 
