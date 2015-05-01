@@ -91,30 +91,25 @@ class BloomFilter:
             full_text = f.read().strip('\n').lower()
             words = nltk.word_tokenize(full_text)
 
-            filtered_text = ""
-
             # Filter out trigrams
             for tgram in nltk.trigrams(words):
                 tstring = self.string_from_n_gram(tgram)
                 if self.query(tstring):
-                    full_text = full_text.replace(tstring, '****')
+                    full_text = full_text.replace(tstring, ' **** ')
 
-
-            # Filter out bigrams
-            # for b in bigrams:
-            #     print
+            for bgram in nltk.bigrams(words):
+                bstring = self.string_from_n_gram(bgram)
+                if self.query(bstring):
+                    full_text = full_text.replace(bstring, ' **** ')
 
             # Filter single words
             for word in words:
-                if self.query(word):
-                    full_text = full_text.replace(word, '****')
+                sgram = " " + word + " "
+                if self.query(sgram):
+                    full_text = full_text.replace(sgram, ' **** ')
 
-                # filtered_text += "****" if self.query(word) else word
-                # filtered_text += " "
-
-
-            # for line in textwrap.wrap(filtered_text, 140):
-            #     print line
+            for line in textwrap.wrap(full_text, 140):
+                print line
 
         pass
 
