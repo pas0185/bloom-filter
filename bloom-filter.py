@@ -38,7 +38,7 @@ class BloomFilter:
         # Set the bits at all these positions to 1"
         for seed in range(self.num_hashes):
             # Modulus for remainder if hash is larger than bit array
-            hash = mmh3.hash(element.lower(), seed) % self.num_bits
+            hash = mmh3.hash(element, seed) % self.num_bits
             self.bit_array[hash] = 1
 
         pass
@@ -48,7 +48,7 @@ class BloomFilter:
 
         # "Feed [the element] to each of the k hash functions to get k array positions.
         for seed in range(self.num_hashes):
-            hash = mmh3.hash(element.lower(), seed) % self.num_bits
+            hash = mmh3.hash(element, seed) % self.num_bits
 
             # If any of the bits at these positions is 0, the element is definitely not in the set.
             # If it were, then all the bits would have been set to 1 when it was inserted.
@@ -59,7 +59,6 @@ class BloomFilter:
         # If all are 1, then either the element is in the set, or the bits have by chance been set to 1
         # during the insertion of other elements resulting in a false positive."
         # print 'The element %s is probably in the set' % element
-        print element
         return True
 
     def read_training_file(self, file_name):
@@ -68,31 +67,51 @@ class BloomFilter:
         with open(file_name) as f:
             for line in tuple(f):
                 # print line
-                self.add(line)
+                self.add(line.lower())
 
             # for word in nltk.word_tokenize(f.read().strip('\n')):
             #     # Add each to the bit_array
             #     print word
             #     self.add(word)
-                
+
         pass
+
+    def string_from_n_gram(self, n_gram):
+        string = " "
+        for n in n_gram:
+            string += n + " "
+
+        return string
 
     def filter_input_file(self, input_file):
 
         with open(input_file) as f:
 
             # Break apart file into list of single words, bigrams, and trigrams
-            full_text = f.read().strip('\n')
+            full_text = f.read().strip('\n').lower()
             words = nltk.word_tokenize(full_text)
 
             filtered_text = ""
 
-            for word in words:
-                filtered_text += "****" if self.query(word) else word
-                filtered_text += " "
+            # Filter out trigrams
+            for tgram in nltk.trigrams(words):
+                tstring = self.string_from_n_gram(tgram)
+                if self.query(tstring):
+                    full_text = full_text.replace(tstring, '****')
 
-            # bigrams = nltk.bigrams(words)
-            # trigrams = nltk.trigrams(words)
+
+            # Filter out bigrams
+            # for b in bigrams:
+            #     print
+
+            # Filter single words
+            for word in words:
+                if self.query(word):
+                    full_text = full_text.replace(word, '****')
+
+                # filtered_text += "****" if self.query(word) else word
+                # filtered_text += " "
+
 
             # for line in textwrap.wrap(filtered_text, 140):
             #     print line
