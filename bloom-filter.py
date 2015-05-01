@@ -1,26 +1,24 @@
 __author__ = 'Patrick Sheehan'
 
+# Patrick Sheehan
+# May 1, 2015
+# CSCE 438 HW #4
+#
 # Sources:
 #
-# Bitarray
-# https://pypi.python.org/pypi/bitarray/
-#
-# MurmurHash3
-# https://pypi.python.org/pypi/mmh3/2.0
-#
-# Natural Language Toolkit
-# http://www.nltk.org/
-#
+# Wikipedia - http://en.wikipedia.org/wiki/Bloom_filter
+# Bitarray - https://pypi.python.org/pypi/bitarray/
+# MurmurHash3 - https://pypi.python.org/pypi/mmh3/2.0
+# Natural Language Toolkit - http://www.nltk.org/
 # Piazza - TAMU CSCE 438
 #
 
 from bitarray import bitarray
 import mmh3
 import nltk
-
+import textwrap
 
 class BloomFilter:
-
 
     def __init__(self, num_bits, num_hashes):
         # Initialize bitarray of num_bits size with all set to 0/False
@@ -36,10 +34,8 @@ class BloomFilter:
     def add(self, element):
         # Add an n-gram from some training data
 
-        # From Wikipedia:
         # "To add an element, feed it to each of the k hash functions to get k array positions.
         # Set the bits at all these positions to 1"
-
         for seed in range(self.num_hashes):
             # Modulus for remainder if hash is larger than bit array
             hash = mmh3.hash(element.lower(), seed) % self.num_bits
@@ -50,9 +46,7 @@ class BloomFilter:
     def query(self, element):
         # Test whether an element is in the set
 
-        # From Wikipedia:
-        # "Feed it [the element] to each of the k hash functions to get k array positions.
-
+        # "Feed [the element] to each of the k hash functions to get k array positions.
         for seed in range(self.num_hashes):
             hash = mmh3.hash(element.lower(), seed) % self.num_bits
 
@@ -73,6 +67,7 @@ class BloomFilter:
         with open(file_name) as f:
             for word in nltk.word_tokenize(f.read().strip('\n')):
                 # Add each to the bit_array
+                
                 self.add(word)
         pass
 
@@ -84,16 +79,17 @@ class BloomFilter:
             full_text = f.read().strip('\n')
             words = nltk.word_tokenize(full_text)
 
+            filtered_text = ""
+
             for word in words:
-                if self.query(word) == True:
-                    print '****',
-                else:
-                    print word,
+                filtered_text += "****" if self.query(word) else word
+                filtered_text += " "
 
             # bigrams = nltk.bigrams(words)
             # trigrams = nltk.trigrams(words)
 
-            print 'done'
+            for line in textwrap.wrap(filtered_text, 140):
+                print line
 
         pass
 
@@ -108,10 +104,6 @@ if __name__ == '__main__':
     bf = BloomFilter(NUM_BITS, NUM_HASHES)
     bf.read_training_file(TRAINING_FILE)
 
-    print bf.query('engine\n')
-    print bf.query('Engine\n')
-
-
-    # bf.filter_input_file(TEST_FILE)
+    bf.filter_input_file(TEST_FILE)
 
     pass
