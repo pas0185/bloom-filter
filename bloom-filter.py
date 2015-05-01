@@ -59,16 +59,22 @@ class BloomFilter:
         # If all are 1, then either the element is in the set, or the bits have by chance been set to 1
         # during the insertion of other elements resulting in a false positive."
         # print 'The element %s is probably in the set' % element
+        print element
         return True
 
     def read_training_file(self, file_name):
         # Input a training file with n-grams newline-delimited
 
         with open(file_name) as f:
-            for word in nltk.word_tokenize(f.read().strip('\n')):
-                # Add each to the bit_array
+            for line in tuple(f):
+                # print line
+                self.add(line)
+
+            # for word in nltk.word_tokenize(f.read().strip('\n')):
+            #     # Add each to the bit_array
+            #     print word
+            #     self.add(word)
                 
-                self.add(word)
         pass
 
     def filter_input_file(self, input_file):
@@ -88,8 +94,8 @@ class BloomFilter:
             # bigrams = nltk.bigrams(words)
             # trigrams = nltk.trigrams(words)
 
-            for line in textwrap.wrap(filtered_text, 140):
-                print line
+            # for line in textwrap.wrap(filtered_text, 140):
+            #     print line
 
         pass
 
