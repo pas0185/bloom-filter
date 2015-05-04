@@ -38,7 +38,7 @@ class BloomFilter:
         # Set the bits at all these positions to 1"
         for seed in range(self.num_hashes):
             # Modulus for remainder if hash is larger than bit array
-            hash = mmh3.hash(element, seed) % self.num_bits
+            hash = mmh3.hash(element.lower(), seed) % self.num_bits
             self.bit_array[hash] = 1
 
         pass
@@ -48,7 +48,7 @@ class BloomFilter:
 
         # "Feed [the element] to each of the k hash functions to get k array positions.
         for seed in range(self.num_hashes):
-            hash = mmh3.hash(element, seed) % self.num_bits
+            hash = mmh3.hash(element.lower(), seed) % self.num_bits
 
             # If any of the bits at these positions is 0, the element is definitely not in the set.
             # If it were, then all the bits would have been set to 1 when it was inserted.
@@ -67,13 +67,7 @@ class BloomFilter:
         with open(file_name) as f:
             for line in tuple(f):
                 # print line
-                self.add(line.lower())
-
-            # for word in nltk.word_tokenize(f.read().strip('\n')):
-            #     # Add each to the bit_array
-            #     print word
-            #     self.add(word)
-
+                self.add(line)
         pass
 
     def string_from_n_gram(self, n_gram):
@@ -88,28 +82,37 @@ class BloomFilter:
         with open(input_file) as f:
 
             # Break apart file into list of single words, bigrams, and trigrams
-            full_text = f.read().strip('\n').lower()
+            full_text = f.read().strip('\n')
             words = nltk.word_tokenize(full_text)
 
-            # Filter out trigrams
+            filtered_words = []
+
+            # Filter trigrams
             for tgram in nltk.trigrams(words):
                 tstring = self.string_from_n_gram(tgram)
                 if self.query(tstring):
+                    filtered_words.append(tstring)
                     full_text = full_text.replace(tstring, ' **** ')
 
+            # Filter bigrams
             for bgram in nltk.bigrams(words):
                 bstring = self.string_from_n_gram(bgram)
                 if self.query(bstring):
+                    filtered_words.append(bstring)
                     full_text = full_text.replace(bstring, ' **** ')
 
             # Filter single words
             for word in words:
                 sgram = " " + word + " "
                 if self.query(sgram):
+                    filtered_words.append(word)
                     full_text = full_text.replace(sgram, ' **** ')
 
             for line in textwrap.wrap(full_text, 140):
                 print line
+
+
+            return filtered_words
 
         pass
 
@@ -124,6 +127,6 @@ if __name__ == '__main__':
     bf = BloomFilter(NUM_BITS, NUM_HASHES)
     bf.read_training_file(TRAINING_FILE)
 
-    bf.filter_input_file(TEST_FILE)
+    filtered_words = bf.filter_input_file(TEST_FILE)
 
     pass
