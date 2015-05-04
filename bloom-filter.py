@@ -63,12 +63,12 @@ class BloomFilter:
 
     def read_training_file(self, file_name):
         # Input a training file with n-grams newline-delimited
+        f = open(file_name, 'r')
+        training_words = [line.replace('\n', '') for line in f]
+        for word in training_words:
+            self.add(word)
 
-        with open(file_name) as f:
-            for line in tuple(f):
-                # print line
-                self.add(line)
-        pass
+        return training_words
 
     def string_from_n_gram(self, n_gram):
         string = " "
@@ -82,39 +82,38 @@ class BloomFilter:
         with open(input_file) as f:
 
             # Break apart file into list of single words, bigrams, and trigrams
-            full_text = f.read().strip('\n')
+            full_text = f.read()
             words = nltk.word_tokenize(full_text)
 
-            filtered_words = []
+            filtered_words = [word for word in words if self.query(word)]
+            filtered_bigrams = [bgram for bgram in nltk.bigrams(words) if self.query(' '.join(bgram))]
+            filtered_trigrams = [tgram for tgram in nltk.trigrams(words) if self.query(' '.join(tgram))]
 
-            # Filter trigrams
-            for tgram in nltk.trigrams(words):
-                tstring = self.string_from_n_gram(tgram)
-                if self.query(tstring):
-                    filtered_words.append(tstring)
-                    full_text = full_text.replace(tstring, ' **** ')
 
-            # Filter bigrams
-            for bgram in nltk.bigrams(words):
-                bstring = self.string_from_n_gram(bgram)
-                if self.query(bstring):
-                    filtered_words.append(bstring)
-                    full_text = full_text.replace(bstring, ' **** ')
-
-            # Filter single words
-            for word in words:
-                sgram = " " + word + " "
-                if self.query(sgram):
-                    filtered_words.append(word)
-                    full_text = full_text.replace(sgram, ' **** ')
-
-            for line in textwrap.wrap(full_text, 140):
-                print line
-
+            # for line in textwrap.wrap(full_text, 140):
+            #     print line
 
             return filtered_words
 
         pass
+
+    def calculate_error_rate(self, removed_words, training_words):
+
+        successes = 0
+        failures = 0
+
+        for removed in removed_words:
+            if removed.lower() in training_words:
+                # Successful filter!
+                successes = successes + 1
+            else:
+                # False positive...
+                failures = failures + 1
+
+
+        error_rate = float(failures) / (successes + failures)
+
+        return error_rate
 
 
 if __name__ == '__main__':
@@ -124,9 +123,16 @@ if __name__ == '__main__':
     TRAINING_FILE   = "auto-words.txt"
     TEST_FILE       = "test-paragraph.txt"
 
+    # Initialize the Bloom Filter
     bf = BloomFilter(NUM_BITS, NUM_HASHES)
-    bf.read_training_file(TRAINING_FILE)
 
-    filtered_words = bf.filter_input_file(TEST_FILE)
+    # Read the training file, return all of the training words
+    training_words = bf.read_training_file(TRAINING_FILE)
+
+    # Filter out a test paragraph, return words that were removed
+    removed_words = bf.filter_input_file(TEST_FILE)
+
+    error_rate = bf.calculate_error_rate(removed_words, training_words)
+    print 'Error rate = %s' % error_rate
 
     pass
