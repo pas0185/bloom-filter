@@ -85,15 +85,28 @@ class BloomFilter:
             full_text = f.read()
             words = nltk.word_tokenize(full_text)
 
+            filtered_trigrams = [' '.join(tgram) for tgram in nltk.trigrams(words) if self.query(' '.join(tgram))]
+            filtered_bigrams = [' '.join(bgram) for bgram in nltk.bigrams(words) if self.query(' '.join(bgram))]
             filtered_words = [word for word in words if self.query(word)]
-            filtered_bigrams = [bgram for bgram in nltk.bigrams(words) if self.query(' '.join(bgram))]
-            filtered_trigrams = [tgram for tgram in nltk.trigrams(words) if self.query(' '.join(tgram))]
 
+            filtered = filtered_trigrams + filtered_bigrams + filtered_words
 
-            # for line in textwrap.wrap(full_text, 140):
-            #     print line
+            new_text = ""
 
-            return filtered_words
+            for word in words:
+                if word in filtered:
+                    new_text += "**** "
+                else:
+                    new_text += word + " "
+
+            # out_file = open('bloom-output-200bits-10hashes', 'w')
+            # out_file.write(new_text)
+            # out_file.close()
+
+            for line in textwrap.wrap(new_text, 140):
+                print line
+
+            return filtered
 
         pass
 
